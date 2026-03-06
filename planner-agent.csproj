@@ -4,7 +4,7 @@
     <TargetFramework>net8.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <RootNamespace>planner_agent</RootNamespace>
+    <RootNamespace>planner-agent</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
