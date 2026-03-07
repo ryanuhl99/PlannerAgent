@@ -1,7 +1,7 @@
 
 namespace Services;
 
-public class LlmService
+public class PlannerService
 {
     
 }

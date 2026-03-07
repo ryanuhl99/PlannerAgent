@@ -1,11 +1,53 @@
+using Common.Models;
+using Common.Utils;
+using Services.Clients;
+using Services;
+using Services.Clients.Agents;
+using Logic;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+builder.Services.AddScoped<LlmService>();
+builder.Services.AddScoped<PlannerLogic>();
+builder.Services.AddScoped<IAgent, ResearchAgentClient>();
+builder.Services.AddScoped<IAgent, CodeAgentClient>();
+builder.Services.AddScoped<IAgent, ReviewAgentClient>();
+builder.Services.AddScoped<AgentResolver>();
+builder.Services.AddScoped<PlannerService>();
+
+builder.Services.AddHttpClient<LlmClient>(client =>
+{
+    client.BaseAddress = new Uri("https://api.openai.com");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<ResearchAgentClient>(client =>
+{
+    client.BaseAddress = new Uri("http://research-agent");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<CodeAgentClient>(client =>
+{
+    client.BaseAddress = new Uri("http://code-agent");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddHttpClient<ReviewAgentClient>(client =>
+{
+    client.BaseAddress = new Uri("http://review-agent");
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+builder.Services.AddControllers();
+//builder.Configuration.AddJsonFile();
+
 var app = builder.Build();
+
+app.MapControllers();
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
@@ -16,29 +58,5 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
